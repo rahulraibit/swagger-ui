@@ -14,7 +14,7 @@ export default class App extends React.Component {
     const Layout = this.getLayout()
 
     return (
-      <Layout/>
+      <Layout onAPIEdit={this.props.onAPIEdit}/>
     )
   }
 }
@@ -22,6 +22,7 @@ export default class App extends React.Component {
 App.propTypes = {
   getComponent: PropTypes.func.isRequired,
   layoutSelectors: PropTypes.object.isRequired,
+  onAPIEdit: PropTypes.func
 }
 
 App.defaultProps = {

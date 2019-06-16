@@ -29,7 +29,8 @@ export default class Operation extends PureComponent {
     oas3Selectors: PropTypes.object.isRequired,
     layoutActions: PropTypes.object.isRequired,
     layoutSelectors: PropTypes.object.isRequired,
-    fn: PropTypes.object.isRequired
+    fn: PropTypes.object.isRequired,
+    handleApiChange: PropTypes.func
   }
 
   static defaultProps = {
@@ -39,7 +40,9 @@ export default class Operation extends PureComponent {
     specPath: List(),
     summary: ""
   }
-
+  onAPIChange(){
+    this.props.handleApiChange(this.props.operation);
+  }
   render() {
     let {
       specPath,
@@ -47,6 +50,7 @@ export default class Operation extends PureComponent {
       request,
       toggleShown,
       onTryoutClick,
+      handleApiChange,
       onCancelClick,
       onExecute,
       fn,
@@ -89,147 +93,148 @@ export default class Operation extends PureComponent {
     let extensions = getExtensions(operation)
 
     const Responses = getComponent("responses")
-    const Parameters = getComponent( "parameters" )
-    const Execute = getComponent( "execute" )
-    const Clear = getComponent( "clear" )
-    const Collapse = getComponent( "Collapse" )
-    const Markdown = getComponent( "Markdown" )
-    const Schemes = getComponent( "schemes" )
-    const OperationServers = getComponent( "OperationServers" )
-    const OperationExt = getComponent( "OperationExt" )
-    const OperationSummary = getComponent( "OperationSummary" )
-    const Link = getComponent( "Link" )
+    const Parameters = getComponent("parameters")
+    const Execute = getComponent("execute")
+    const Clear = getComponent("clear")
+    const Collapse = getComponent("Collapse")
+    const Markdown = getComponent("Markdown")
+    const Schemes = getComponent("schemes")
+    const OperationServers = getComponent("OperationServers")
+    const OperationExt = getComponent("OperationExt")
+    const OperationSummary = getComponent("OperationSummary")
+    const Link = getComponent("Link")
 
     const { showExtensions } = getConfigs()
 
     // Merge in Live Response
-    if(responses && response && response.size > 0) {
+    if (responses && response && response.size > 0) {
       let notDocumented = !responses.get(String(response.get("status"))) && !responses.get("default")
       response = response.set("notDocumented", notDocumented)
     }
 
-    let onChangeKey = [ path, method ] // Used to add values to _this_ operation ( indexed by path and method )
-
+    let onChangeKey = [path, method] // Used to add values to _this_ operation ( indexed by path and method )
     return (
-        <div className={deprecated ? "opblock opblock-deprecated" : isShown ? `opblock opblock-${method} is-open` : `opblock opblock-${method}`} id={escapeDeepLinkPath(isShownKey.join("-"))} >
-        <OperationSummary operationProps={operationProps} toggleShown={toggleShown} getComponent={getComponent} authActions={authActions} authSelectors={authSelectors} specPath={specPath} />
-          <Collapse isOpened={isShown}>
-            <div className="opblock-body">
-              { (operation && operation.size) || operation === null ? null :
-                <img height={"32px"} width={"32px"} src={require("core/../img/rolling-load.svg")} className="opblock-loading-animation" />
-              }
-              { deprecated && <h4 className="opblock-title_normal"> Warning: Deprecated</h4>}
-              { description &&
-                <div className="opblock-description-wrapper">
-                  <div className="opblock-description">
-                    <Markdown source={ description } />
-                  </div>
+      <div className={deprecated ? "opblock opblock-deprecated" : isShown ? `opblock opblock-${method} is-open` : `opblock opblock-${method}`} id={escapeDeepLinkPath(isShownKey.join("-"))} >
+        <OperationSummary operationProps={operationProps}
+          toggleShown={toggleShown} getComponent={getComponent} handleApiChange={this.onAPIChange.bind(this)}
+          authActions={authActions} authSelectors={authSelectors} specPath={specPath} />
+        <Collapse isOpened={isShown}>
+          <div className="opblock-body">
+            {(operation && operation.size) || operation === null ? null :
+              <img height={"32px"} width={"32px"} src={require("core/../img/rolling-load.svg")} className="opblock-loading-animation" />
+            }
+            {deprecated && <h4 className="opblock-title_normal"> Warning: Deprecated</h4>}
+            {description &&
+              <div className="opblock-description-wrapper">
+                <div className="opblock-description">
+                  <Markdown source={description} />
                 </div>
-              }
-              {
-                externalDocs && externalDocs.url ?
+              </div>
+            }
+            {
+              externalDocs && externalDocs.url ?
                 <div className="opblock-external-docs-wrapper">
                   <h4 className="opblock-title_normal">Find more details</h4>
                   <div className="opblock-external-docs">
                     <span className="opblock-external-docs__description">
-                      <Markdown source={ externalDocs.description } />
+                      <Markdown source={externalDocs.description} />
                     </span>
                     <Link target="_blank" className="opblock-external-docs__link" href={sanitizeUrl(externalDocs.url)}>{externalDocs.url}</Link>
                   </div>
                 </div> : null
-              }
+            }
 
-              { !operation || !operation.size ? null :
-                <Parameters
-                  parameters={parameters}
-                  specPath={specPath.push("parameters")}
-                  operation={operation}
-                  onChangeKey={onChangeKey}
-                  onTryoutClick = { onTryoutClick }
-                  onCancelClick = { onCancelClick }
-                  tryItOutEnabled = { tryItOutEnabled }
-                  allowTryItOut={allowTryItOut}
+            {!operation || !operation.size ? null :
+              <Parameters
+                parameters={parameters}
+                specPath={specPath.push("parameters")}
+                operation={operation}
+                onChangeKey={onChangeKey}
+                onTryoutClick={onTryoutClick}
+                onCancelClick={onCancelClick}
+                tryItOutEnabled={tryItOutEnabled}
+                allowTryItOut={allowTryItOut}
 
-                  fn={fn}
-                  getComponent={ getComponent }
-                  specActions={ specActions }
-                  specSelectors={ specSelectors }
-                  pathMethod={ [path, method] }
-                  getConfigs={ getConfigs }
-                />
-              }
+                fn={fn}
+                getComponent={getComponent}
+                specActions={specActions}
+                specSelectors={specSelectors}
+                pathMethod={[path, method]}
+                getConfigs={getConfigs}
+              />
+            }
 
-              { !tryItOutEnabled ? null :
-                <OperationServers
-                  getComponent={getComponent}
-                  path={path}
-                  method={method}
-                  operationServers={operation.get("servers")}
-                  pathServers={specSelectors.paths().getIn([path, "servers"])}
-                  getSelectedServer={oas3Selectors.selectedServer}
-                  setSelectedServer={oas3Actions.setSelectedServer}
-                  setServerVariableValue={oas3Actions.setServerVariableValue}
-                  getServerVariable={oas3Selectors.serverVariableValue}
-                  getEffectiveServerValue={oas3Selectors.serverEffectiveValue}
-                />
-              }
+            {!tryItOutEnabled ? null :
+              <OperationServers
+                getComponent={getComponent}
+                path={path}
+                method={method}
+                operationServers={operation.get("servers")}
+                pathServers={specSelectors.paths().getIn([path, "servers"])}
+                getSelectedServer={oas3Selectors.selectedServer}
+                setSelectedServer={oas3Actions.setSelectedServer}
+                setServerVariableValue={oas3Actions.setServerVariableValue}
+                getServerVariable={oas3Selectors.serverVariableValue}
+                getEffectiveServerValue={oas3Selectors.serverEffectiveValue}
+              />
+            }
 
-              {!tryItOutEnabled || !allowTryItOut ? null : schemes && schemes.size ? <div className="opblock-schemes">
-                    <Schemes schemes={ schemes }
-                             path={ path }
-                             method={ method }
-                             specActions={ specActions }
-                             currentScheme={ operationScheme } />
-                  </div> : null
-              }
+            {!tryItOutEnabled || !allowTryItOut ? null : schemes && schemes.size ? <div className="opblock-schemes">
+              <Schemes schemes={schemes}
+                path={path}
+                method={method}
+                specActions={specActions}
+                currentScheme={operationScheme} />
+            </div> : null
+            }
 
             <div className={(!tryItOutEnabled || !response || !allowTryItOut) ? "execute-wrapper" : "btn-group"}>
-              { !tryItOutEnabled || !allowTryItOut ? null :
+              {!tryItOutEnabled || !allowTryItOut ? null :
 
-                  <Execute
-                    operation={ operation }
-                    specActions={ specActions }
-                    specSelectors={ specSelectors }
-                    path={ path }
-                    method={ method }
-                    onExecute={ onExecute } />
+                <Execute
+                  operation={operation}
+                  specActions={specActions}
+                  specSelectors={specSelectors}
+                  path={path}
+                  method={method}
+                  onExecute={onExecute} />
               }
 
-              { (!tryItOutEnabled || !response || !allowTryItOut) ? null :
-                  <Clear
-                    specActions={ specActions }
-                    path={ path }
-                    method={ method }/>
+              {(!tryItOutEnabled || !response || !allowTryItOut) ? null :
+                <Clear
+                  specActions={specActions}
+                  path={path}
+                  method={method} />
               }
             </div>
 
             {executeInProgress ? <div className="loading-container"><div className="loading"></div></div> : null}
 
-              { !responses ? null :
-                  <Responses
-                    responses={ responses }
-                    request={ request }
-                    tryItOutResponse={ response }
-                    getComponent={ getComponent }
-                    getConfigs={ getConfigs }
-                    specSelectors={ specSelectors }
-                    oas3Actions={oas3Actions}
-                    specActions={ specActions }
-                    produces={specSelectors.producesOptionsFor([path, method]) }
-                    producesValue={ specSelectors.currentProducesFor([path, method]) }
-                    specPath={specPath.push("responses")}
-                    path={ path }
-                    method={ method }
-                    displayRequestDuration={ displayRequestDuration }
-                    fn={fn} />
-              }
+            {!responses ? null :
+              <Responses
+                responses={responses}
+                request={request}
+                tryItOutResponse={response}
+                getComponent={getComponent}
+                getConfigs={getConfigs}
+                specSelectors={specSelectors}
+                oas3Actions={oas3Actions}
+                specActions={specActions}
+                produces={specSelectors.producesOptionsFor([path, method])}
+                producesValue={specSelectors.currentProducesFor([path, method])}
+                specPath={specPath.push("responses")}
+                path={path}
+                method={method}
+                displayRequestDuration={displayRequestDuration}
+                fn={fn} />
+            }
 
-              { !showExtensions || !extensions.size ? null :
-                <OperationExt extensions={ extensions } getComponent={ getComponent } />
-              }
-            </div>
-          </Collapse>
-        </div>
+            {!showExtensions || !extensions.size ? null :
+              <OperationExt extensions={extensions} getComponent={getComponent} />
+            }
+          </div>
+        </Collapse>
+      </div>
     )
   }
 

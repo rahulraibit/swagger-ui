@@ -9,7 +9,8 @@ export default class BaseLayout extends React.Component {
     specSelectors: PropTypes.object.isRequired,
     oas3Selectors: PropTypes.object.isRequired,
     oas3Actions: PropTypes.object.isRequired,
-    getComponent: PropTypes.func.isRequired
+    getComponent: PropTypes.func.isRequired,
+    onAPIEdit: PropTypes.func
   }
 
   render() {
@@ -99,9 +100,9 @@ export default class BaseLayout extends React.Component {
             {hasServers || hasSchemes || hasSecurityDefinitions ? (
               <div className="scheme-container">
                 <Col className="schemes wrapper" mobile={12}>
-                  {hasServers ? (<ServersContainer />) : null}
+                  {/* {hasServers ? (<ServersContainer />) : null}
                   {hasSchemes ? (<SchemesContainer />) : null}
-                  {hasSecurityDefinitions ? (<AuthorizeBtnContainer />) : null}
+                  {hasSecurityDefinitions ? (<AuthorizeBtnContainer />) : null} */}
                 </Col>
               </div>
             ) : null}
@@ -110,7 +111,7 @@ export default class BaseLayout extends React.Component {
 
             <Row>
               <Col mobile={12} desktop={12} >
-                <Operations/>
+                <Operations onAPIEdit={this.props.onAPIEdit}/>
               </Col>
             </Row>
             <Row>

@@ -3,6 +3,7 @@ import PropTypes from "prop-types"
 import ImPropTypes from "react-immutable-proptypes"
 import { helpers } from "swagger-client"
 import { Iterable, fromJS, Map } from "immutable"
+import { getList } from "core/utils"
 
 const { opId } = helpers
 
@@ -13,6 +14,7 @@ export default class OperationContainer extends PureComponent {
       tryItOutEnabled: false,
       executeInProgress: false
     }
+    this.handleApiChange = this.handleApiChange.bind(this);
   }
 
   static propTypes = {
@@ -43,7 +45,8 @@ export default class OperationContainer extends PureComponent {
     layoutActions: PropTypes.object.isRequired,
     layoutSelectors: PropTypes.object.isRequired,
     fn: PropTypes.object.isRequired,
-    getConfigs: PropTypes.func.isRequired
+    getConfigs: PropTypes.func.isRequired,
+    onAPIEdit: PropTypes.func
   }
 
   static defaultProps = {
@@ -53,7 +56,7 @@ export default class OperationContainer extends PureComponent {
     displayOperationId: false,
     displayRequestDuration: false
   }
-
+  
   mapStateToProps(nextState, props) {
     const { op, layoutSelectors, getConfigs } = props
     const { docExpansion, deepLinking, displayOperationId, displayRequestDuration, supportedSubmitMethods } = getConfigs()
@@ -74,7 +77,7 @@ export default class OperationContainer extends PureComponent {
       allowTryItOut,
       security,
       isAuthorized: props.authSelectors.isAuthorized(security),
-      isShown: layoutSelectors.isShown(isShownKey, docExpansion === "full" ),
+      isShown: layoutSelectors.isShown(isShownKey, docExpansion === "full"),
       jumpToKey: `paths.${props.path}.${props.method}`,
       response: props.specSelectors.responseFor(props.path, props.method),
       request: props.specSelectors.requestFor(props.path, props.method)
@@ -85,7 +88,7 @@ export default class OperationContainer extends PureComponent {
     const { isShown } = this.props
     const resolvedSubtree = this.getResolvedSubtree()
 
-    if(isShown && resolvedSubtree === undefined) {
+    if (isShown && resolvedSubtree === undefined) {
       this.requestResolvedSubtree()
     }
   }
@@ -94,32 +97,40 @@ export default class OperationContainer extends PureComponent {
     const { response, isShown } = nextProps
     const resolvedSubtree = this.getResolvedSubtree()
 
-    if(response !== this.props.response) {
+    if (response !== this.props.response) {
       this.setState({ executeInProgress: false })
     }
 
-    if(isShown && resolvedSubtree === undefined) {
+    if (isShown && resolvedSubtree === undefined) {
       this.requestResolvedSubtree()
     }
   }
 
-  toggleShown =() => {
-    let { layoutActions, tag, operationId, isShown } = this.props
-    const resolvedSubtree = this.getResolvedSubtree()
-    if(!isShown && resolvedSubtree === undefined) {
+  handleApiChange(operationProps) {
+    let {
+      path,
+      method
+    } = operationProps.toJS()
+    let selectedOperation = this.props.specSelectors.operationWithMeta(path, method);
+    this.props.onAPIEdit(operationProps, selectedOperation);
+  }
+  toggleShown = () => {
+    let { layoutActions, tag, operationId, isShown, op, path, summary, method } = this.props
+    const resolvedSubtree = this.getResolvedSubtree();
+    if (!isShown && resolvedSubtree === undefined) {
       // transitioning from collapsed to expanded
       this.requestResolvedSubtree()
     }
     layoutActions.show(["operations", tag, operationId], !isShown)
   }
 
-  onCancelClick=() => {
-    this.setState({tryItOutEnabled: !this.state.tryItOutEnabled})
+  onCancelClick = () => {
+    this.setState({ tryItOutEnabled: !this.state.tryItOutEnabled })
   }
 
-  onTryoutClick =() => {
+  onTryoutClick = () => {
     let { specActions, path, method } = this.props
-    this.setState({tryItOutEnabled: !this.state.tryItOutEnabled})
+    this.setState({ tryItOutEnabled: !this.state.tryItOutEnabled })
     specActions.clearValidateParams([path, method])
   }
 
@@ -135,7 +146,7 @@ export default class OperationContainer extends PureComponent {
       specPath
     } = this.props
 
-    if(specPath) {
+    if (specPath) {
       return specSelectors.specResolvedSubtree(specPath.toJS())
     }
 
@@ -151,7 +162,7 @@ export default class OperationContainer extends PureComponent {
     } = this.props
 
 
-    if(specPath) {
+    if (specPath) {
       return specActions.requestResolvedSubtree(specPath.toJS())
     }
 
@@ -190,7 +201,7 @@ export default class OperationContainer extends PureComponent {
       fn
     } = this.props
 
-    const Operation = getComponent( "operation" )
+    const Operation = getComponent("operation")
 
     const resolvedSubtree = this.getResolvedSubtree() || Map()
 
@@ -230,16 +241,18 @@ export default class OperationContainer extends PureComponent {
         onExecute={this.onExecute}
         specPath={specPath}
 
-        specActions={ specActions }
-        specSelectors={ specSelectors }
+        handleApiChange={this.handleApiChange}
+
+        specActions={specActions}
+        specSelectors={specSelectors}
         oas3Actions={oas3Actions}
         oas3Selectors={oas3Selectors}
-        layoutActions={ layoutActions }
-        layoutSelectors={ layoutSelectors }
-        authActions={ authActions }
-        authSelectors={ authSelectors }
-        getComponent={ getComponent }
-        getConfigs={ getConfigs }
+        layoutActions={layoutActions}
+        layoutSelectors={layoutSelectors}
+        authActions={authActions}
+        authSelectors={authSelectors}
+        getComponent={getComponent}
+        getConfigs={getConfigs}
         fn={fn}
       />
     )

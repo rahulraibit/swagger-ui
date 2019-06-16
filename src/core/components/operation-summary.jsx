@@ -15,6 +15,7 @@ export default class OperationSummary extends PureComponent {
     getConfigs: PropTypes.func.isRequired,
     authActions: PropTypes.object,
     authSelectors: PropTypes.object,
+    handleApiChange: propTypes.func
   }
 
   static defaultProps = {
@@ -22,7 +23,6 @@ export default class OperationSummary extends PureComponent {
     specPath: List(),
     summary: ""
   }
-
   render() {
 
     let {
@@ -32,6 +32,7 @@ export default class OperationSummary extends PureComponent {
       authSelectors,
       operationProps,
       specPath,
+      handleApiChange
     } = this.props
 
     let {
@@ -71,14 +72,15 @@ export default class OperationSummary extends PureComponent {
         {displayOperationId && (originalOperationId || operationId) ? <span className="opblock-summary-operation-id">{originalOperationId || operationId}</span> : null}
 
         {
-          (!security || !security.count()) ? null :
-            <AuthorizeOperationBtn
-              isAuthorized={isAuthorized}
-              onClick={() => {
-                const applicableDefinitions = authSelectors.definitionsForRequirements(security)
-                authActions.showDefinitions(applicableDefinitions)
-              }}
-            />
+          // (!security || !security.count()) ? null :
+          //   <AuthorizeOperationBtn
+          //     isAuthorized={isAuthorized}
+          //     onClick={() => {
+          //       const applicableDefinitions = authSelectors.definitionsForRequirements(security)
+          //       authActions.showDefinitions(applicableDefinitions)
+          //     }}
+          //   />
+          <button value="Edit" onClick={handleApiChange}>Edit</button>
         }
         <JumpToPath path={specPath} />{/* TODO: use wrapComponents here, swagger-ui doesn't care about jumpToPath */}
       </div>

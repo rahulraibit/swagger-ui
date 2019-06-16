@@ -21,8 +21,10 @@ export default class Operations extends React.Component {
     authActions: PropTypes.object.isRequired,
     authSelectors: PropTypes.object.isRequired,
     getConfigs: PropTypes.func.isRequired,
-    fn: PropTypes.func.isRequired
+    fn: PropTypes.func.isRequired,
+    onAPIEdit: PropTypes.func
   };
+
 
   render() {
     let {
@@ -56,57 +58,59 @@ export default class Operations extends React.Component {
     }
 
     return (
-        <div>
-          {
-            taggedOps.map( (tagObj, tag) => {
-              const operations = tagObj.get("operations")
-              return (
-                <OperationTag
-                  key={"operation-" + tag}
-                  tagObj={tagObj}
-                  tag={tag}
-                  layoutSelectors={layoutSelectors}
-                  layoutActions={layoutActions}
-                  getConfigs={getConfigs}
-                  getComponent={getComponent}>
-                  {
-                    operations.map( op => {
-                      const path = op.get("path")
-                      const method = op.get("method")
-                      const specPath = Im.List(["paths", path, method])
+      <div>
+        {
+          taggedOps.map((tagObj, tag) => {
+            const operations = tagObj.get("operations")
+            return (
+              <OperationTag
+                key={"operation-" + tag}
+                tagObj={tagObj}
+                tag={tag}
+                layoutSelectors={layoutSelectors}
+                layoutActions={layoutActions}
+                getConfigs={getConfigs}
+                getComponent={getComponent}>
+                {
+                  operations.map(op => {
+                    const path = op.get("path")
+                    const method = op.get("method")
+                    const specPath = Im.List(["paths", path, method])
+                    const parameters = op.get("parameters")
+
+                    // FIXME: (someday) this logic should probably be in a selector,
+                    // but doing so would require further opening up
+                    // selectors to the plugin system, to allow for dynamic
+                    // overriding of low-level selectors that other selectors
+                    // rely on. --KS, 12/17
+                    const validMethods = specSelectors.isOAS3() ?
+                      OAS3_OPERATION_METHODS : SWAGGER2_OPERATION_METHODS
+
+                    if (validMethods.indexOf(method) === -1) {
+                      return null
+                    }
+
+                    return <OperationContainer
+                      key={`${path}-${method}`}
+                      specPath={specPath}
+                      op={op}
+                      path={path}
+                      method={method}
+                      parameters={parameters}
+                      onAPIEdit={this.props.onAPIEdit}
+                      tag={tag}
+                    />
+                  }).toArray()
+                }
 
 
-                      // FIXME: (someday) this logic should probably be in a selector,
-                      // but doing so would require further opening up
-                      // selectors to the plugin system, to allow for dynamic
-                      // overriding of low-level selectors that other selectors
-                      // rely on. --KS, 12/17
-                      const validMethods = specSelectors.isOAS3() ?
-                            OAS3_OPERATION_METHODS : SWAGGER2_OPERATION_METHODS
+              </OperationTag>
+            )
+          }).toArray()
+        }
 
-                      if(validMethods.indexOf(method) === -1) {
-                        return null
-                      }
-
-                      return <OperationContainer
-                                 key={`${path}-${method}`}
-                                 specPath={specPath}
-                                 op={op}
-                                 path={path}
-                                 method={method}
-                                 tag={tag}
-                                 />
-                    }).toArray()
-                  }
-
-
-                </OperationTag>
-              )
-            }).toArray()
-          }
-
-          { taggedOps.size < 1 ? <h3> No operations defined in spec! </h3> : null }
-        </div>
+        {taggedOps.size < 1 ? <h3> No operations defined in spec! </h3> : null}
+      </div>
     )
   }
 

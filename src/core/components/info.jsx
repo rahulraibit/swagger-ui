@@ -39,12 +39,12 @@ class Contact extends React.Component {
 
     return (
       <div className="info__contact">
-        { url && <div><Link href={ sanitizeUrl(url) } target="_blank">{ name } - Website</Link></div> }
+        {/* { url && <div><Link href={ sanitizeUrl(url) } target="_blank">{ name } - Website</Link></div> }
         { email &&
           <Link href={sanitizeUrl(`mailto:${email}`)}>
             { url ? `Send email to ${name}` : `Contact ${name}`}
           </Link>
-        }
+        } */}
       </div>
     )
   }

@@ -5,16 +5,19 @@ import win from "core/window"
 import ApisPreset from "core/presets/apis"
 
 import * as AllPlugins from "core/plugins/all"
-import { parseSearch } from "core/utils"
+import * as swaggerUtils from "core/utils"
+
 
 if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
   win.Perf = require("react-dom/lib/ReactPerf")
 }
 
+module.exports.swaggerUtils = swaggerUtils;
+
 // eslint-disable-next-line no-undef
 const { GIT_DIRTY, GIT_COMMIT, PACKAGE_VERSION, HOSTNAME, BUILD_TIME } = buildInfo
 
-module.exports = function SwaggerUI(opts) {
+module.exports.swaggerUIConstructor = function SwaggerUI(opts) {
 
   win.versions = win.versions || {}
   win.versions.swaggerUi = {
@@ -81,7 +84,7 @@ module.exports = function SwaggerUI(opts) {
     components: { },
   }
 
-  let queryConfig = parseSearch()
+  let queryConfig = swaggerUtils.parseSearch()
 
   const domNode = opts.domNode
   delete opts.domNode
